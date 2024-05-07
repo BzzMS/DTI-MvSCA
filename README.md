@@ -7,9 +7,5 @@ If you wish to process your own data, you can open the "data_process" folder and
 
 
 
-<h3>
-If you use our code, please cite our paper at the same time. Thank you~
-</h3>
-
 
 
