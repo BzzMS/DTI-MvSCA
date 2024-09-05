@@ -1,6 +1,6 @@
 ## DTI-MvSCA
 
-code for " DTI-MvSCA: A multi-view neural network framework for drug-target interaction prediction"
+code for "DTI-MvSCA: An Anti-Over-Smoothing Multi-View Framework with Negative Sample Selection for Predicting Drug-Target Interactions."
 
 ### Quick start
 
