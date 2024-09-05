@@ -1,0 +1,52 @@
+\begin{algorithm}[!h]
+	\caption{The algorithm of DTI-MvSCA}
+	\label{alg}
+	\renewcommand{\algorithmicrequire}{\textbf{Input: }}
+	\renewcommand{\algorithmicensure}{\textbf{Output:}}
+	\begin{algorithmic}[1]
+		\REQUIRE Five heterogeneous networks:  $\mathbf{M}_{\text{drug-drug}}$, $\mathbf{M}_{\text{drug-disease}}$, $\mathbf{M}_{\text{drug-effect}}$, $\mathbf{M}_{\text{protein-disease}}$, and $\mathbf{M}_{\text{protein-protein}}$; two similarity networks: $\mathbf{H}_{\text{drug-chemical}}$ and $\mathbf{H}_{\text{protein-sequence}}$; drug-protein interaction matrix $\mathbf{M}_{\text{drug-protein}}$
+		\ENSURE The predicted results matrix $\mathbf{R}$    %%output
+		\STATE \textbf{Define:} Let $\mathbf{M^*}$ denote the five heterogeneous matrices; $\mathbf{H}_{\text{drug}^*}$ represent all similarity matrices related to drugs; $\mathbf{H}_{\text{protein}^*}$ represent all similarity matrices related to proteins
+		\FOR{each $\mathbf{M}_i \in \mathbf{M^*} $} 
+		\STATE  $\mathbf{H}_i \gets \text{Jaccard}(\mathbf{M}_i) $
+		\ENDFOR
+		\STATE $\mathbf{X_{\text{drug}}} \gets \text{DAE}(\text{RWR}(\mathbf{H}_{\text{drug}^*}))$
+		\STATE $\mathbf{X_{\text{protein}}} \gets \text{DAE}(\text{RWR}(\mathbf{H}_{\text{protein}^*}))$
+		\STATE $\mathbf{I_{\text{drug-protein}}} \gets  \mathbf{M_{\text{drug-disease}}} \cdot \mathbf{M_{\text{protein-disease}}}^\top $
+		\STATE Initialize $\mathbf{N_{\text{DTI}}} \leftarrow \emptyset$ // $\emptyset$ represents the set of negative DTIs
+		\FOR{each drug $d_i$}
+		\STATE $  {Bound}_{\text{drug}}  \leftarrow \min(I_{d_i})$ // Find minimum interaction strength for drug $d_i$
+		\FOR{each protein $p_j$}
+		\IF{$I_{d_i, p_j} < {Bound}_{\text{drug}} $}
+		\STATE Add $d_i$-$p_j$ to $\mathbf{N}_{\text{DTI}}^{\text{drug}}$
+		\ENDIF
+		\ENDFOR
+		\ENDFOR
+		\FOR{each protein $p_j$}
+		\STATE $ {Bound}_{\text{pro}} \leftarrow \min(I_{p_j})$  // Find minimum interaction strength for protein $p_j$
+		\FOR{each drug $d_i$}
+		\IF{$I_{d_i, p_j} <  {Bound}_{\text{pro}}$}
+		\STATE Add $d_i$-$p_j$ to $\mathbf{N}_{\text{DTI}}^{\text{pro}}$
+		\ENDIF
+		\ENDFOR
+		\ENDFOR
+		\STATE $\mathbf{N_{\text{DTI}}} \leftarrow \mathbf{N}_{\text{DTI}}^{\text{drug}} \cap \mathbf{N}_{\text{DTI}}^{\text{pro}}$  // Intersection of both sets
+		\STATE $\mathbf{X}_{\text{DPP}} \gets \text{Concatenate}(\mathbf{X}^i_{\text{drug}}, \mathbf{X}^j_{\text{protein}})$  // Combine the features of drugs and proteins based on $\mathbf{M}_{\text{drug-protein}}$ and $\mathbf{N_{\text{DTI}}}$.
+		\STATE $\mathbf A_t = \begin{bmatrix}
+			f(\text{DPP}_1, \text{DPP}_1) & \dots & f(\text{DPP}_1, \text{DPP}_n) \\
+			f(\text{DPP}_2, \text{DPP}_1) & \dots & f(\text{DPP}_2, \text{DPP}_n) \\
+			\vdots & \ddots & \vdots \\
+			f(\text{DPP}_n, \text{DPP}_1) & \dots & f(\text{DPP}_n, \text{DPP}_n)
+		\end{bmatrix} $  
+		\STATE $ \mathbf{X}_{\text{DPP}}^{'} \gets {\text{self-Attention}}(\mathbf{X}_{\text{DPP}}) $
+		
+		\FOR {$v \in V_t$}
+		\STATE{Get $\mathbf G[v]$ by $EXTRACT$ on $\mathbf G$\;}
+		\STATE{	$\mathbf T_{[v]} \gets {\text{GAT}}(\mathbf G[v]) $\; }
+		\ENDFOR
+		\STATE{	$\mathbf V \gets {\text{CNN}}(\mathbf{X}_{\text{DPP}}) $\; }	
+		\STATE{	$\mathbf Z \gets {\text{Attention}}(\mathbf T ,\mathbf V) $\; }
+		\STATE{	$\mathbf R \gets {\text{MLP}}(\mathbf Z) $\; }
+		\RETURN $\mathbf{R}$
+	\end{algorithmic}
+\end{algorithm}
